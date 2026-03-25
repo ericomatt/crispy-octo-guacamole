@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Requests</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        
+        .submit-form {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .submit-form h2 {
+            margin-bottom: 15px;
+            color: #34495e;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button[type="submit"] {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        
+        button[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+        
+        .feature-list {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .feature-item {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+        
+        .rank {
+            font-size: 24px;
+            font-weight: bold;
+            color: #95a5a6;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .rank.top-3 {
+            color: #f39c12;
+        }
+        
+        .vote-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 60px;
+        }
+        
+        .vote-count {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .vote-btn {
+            background: none;
+            border: 2px solid #ddd;
+            color: #ddd;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .vote-btn:hover {
+            border-color: #3498db;
+            color: #3498db;
+        }
+        
+        .vote-btn.voted {
+            background-color: #3498db;
+            border-color: #3498db;
+            color: white;
+        }
+        
+        .feature-content {
+            flex: 1;
+        }
+        
+        .feature-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .feature-description {
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .feature-meta {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .messages {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        
+        .messages li {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Feature Requests</h1>
+        
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        <div class="submit-form">
+            <h2>Submit a Feature Request</h2>
+            <form action="{% url 'create_feature_request' %}" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" required placeholder="Enter feature title">
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" required placeholder="Describe the feature you'd like to see"></textarea>
+                </div>
+                <button type="submit">Submit Feature Request</button>
+            </form>
+        </div>
+        
+        <div class="feature-list">
+            {% if feature_requests %}
+                {% for feature in feature_requests %}
+                    <div class="feature-item">
+                        <div class="rank {% if forloop.counter <= 3 %}top-3{% endif %}">#{{ forloop.counter }}</div>
+                        <div class="vote-section">
+                            <span class="vote-count">{{ feature.vote_count }}</span>
+                            <form action="{% url 'toggle_vote' feature.pk %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="vote-btn {% if feature.pk in voted_ids %}voted{% endif %}" title="{% if feature.pk in voted_ids %}Remove vote{% else %}Upvote{% endif %}">
+                                    ▲
+                                </button>
+                            </form>
+                        </div>
+                        <div class="feature-content">
+                            <div class="feature-title">{{ feature.title }}</div>
+                            <div class="feature-description">{{ feature.description }}</div>
+                            <div class="feature-meta">Submitted {{ feature.created_at|date:"M d, Y" }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No feature requests yet. Be the first to submit one!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
