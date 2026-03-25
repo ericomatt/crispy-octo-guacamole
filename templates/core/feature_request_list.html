@@ -63,6 +63,13 @@
             font-size: 14px;
         }
         
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+        }
+        
         textarea {
             min-height: 100px;
             resize: vertical;
@@ -154,6 +161,11 @@
             color: white;
         }
         
+        .vote-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
         .feature-content {
             flex: 1;
         }
@@ -236,16 +248,18 @@
         <div class="feature-list">
             {% if feature_requests %}
                 {% for feature in feature_requests %}
-                    <div class="feature-item">
+                    <div class="feature-item" data-feature-id="{{ feature.pk }}">
                         <div class="rank {% if forloop.counter <= 3 %}top-3{% endif %}">#{{ forloop.counter }}</div>
                         <div class="vote-section">
-                            <span class="vote-count">{{ feature.vote_count }}</span>
-                            <form action="{% url 'toggle_vote' feature.pk %}" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="vote-btn {% if feature.pk in voted_ids %}voted{% endif %}" title="{% if feature.pk in voted_ids %}Remove vote{% else %}Upvote{% endif %}">
-                                    ▲
-                                </button>
-                            </form>
+                            <!-- REQ-004: Vote count displayed for each request -->
+                            <span class="vote-count">{{ feature.votes_count }}</span>
+                            <!-- REQ-003: Upvote with toggle behavior, voted state indicator -->
+                            <button type="button" 
+                                    class="vote-btn {% if feature.pk in voted_ids %}voted{% endif %}" 
+                                    data-feature-pk="{{ feature.pk }}"
+                                    title="{% if feature.pk in voted_ids %}Remove vote{% else %}Upvote{% endif %}">
+                                ▲
+                            </button>
                         </div>
                         <div class="feature-content">
                             <div class="feature-title">{{ feature.title }}</div>
@@ -255,11 +269,77 @@
                     </div>
                 {% endfor %}
             {% else %}
+                <!-- REQ-002: Empty state message -->
                 <div class="empty-state">
                     <p>No feature requests yet. Be the first to submit one!</p>
                 </div>
             {% endif %}
         </div>
     </div>
+
+    <script>
+        // REQ-003 & Performance: AJAX voting for immediate UI updates
+        document.addEventListener('DOMContentLoaded', function() {
+            const voteButtons = document.querySelectorAll('.vote-btn');
+            
+            voteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const featurePk = this.dataset.featurePk;
+                    const voteCountEl = this.parentElement.querySelector('.vote-count');
+                    const originalText = this.textContent;
+                    
+                    // Disable button during request to prevent double-clicks
+                    this.disabled = true;
+                    
+                    // Use AJAX for immediate UI update without page reload
+                    fetch(`/api/vote/${featurePk}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // REQ-004: Update vote count immediately
+                            voteCountEl.textContent = data.vote_count;
+                            
+                            // REQ-003: Toggle voted state indicator
+                            if (data.has_voted) {
+                                this.classList.add('voted');
+                                this.title = 'Remove vote';
+                            } else {
+                                this.classList.remove('voted');
+                                this.title = 'Upvote';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Vote error:', error);
+                    })
+                    .finally(() => {
+                        this.disabled = false;
+                    });
+                });
+            });
+            
+            // Helper function to get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
 </body>
 </html>

@@ -24,4 +24,5 @@ urlpatterns = [
     path("", views.feature_request_list, name="feature_request_list"),
     path("create/", views.create_feature_request, name="create_feature_request"),
     path("vote/<int:pk>/", views.toggle_vote, name="toggle_vote"),
+    path("api/vote/<int:pk>/", views.api_toggle_vote, name="api_toggle_vote"),
 ]

@@ -3,3 +3,6 @@
 2026-03-25T15:30:00Z - Added pyright, pylint, pytest configuration and pre-commit CI hook
 2026-03-25T15:45:00Z - Added KISS, SOLID, Conventional Commits, TDD, DDD design patterns to AGENTS.md
 2026-03-25T15:55:00Z - Committed Django project initial setup with model tests (CI passing)
+2026-03-25T18:00:00Z - @qa: Created comprehensive tests in core/tests.py for Feature Request System covering REQ-001 (Submit), REQ-002 (View List), REQ-003 (Upvote), REQ-004 (Vote Counts/Ranking)
+2026-03-25T18:15:00Z - @backend: Implemented all requirements - Added Vote model, updated views with validation/AJAX voting, added API endpoint for immediate UI updates, updated template with voted state indicator
+2026-03-25T18:30:00Z - Fixed linting issues (trailing whitespace, unused variables), verified CI passes with 17 tests
